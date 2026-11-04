@@ -264,8 +264,27 @@
     .order-bar .sum b { font-size: 20px; }
     .order-bar .btn { margin: 0; flex: 1; }
   </style>
+  <style>
+    html, body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    body {
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+</style>
 </head>
-<body>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+    window.Telegram.WebApp.ready();
+    window.Telegram.WebApp.expand();
+</script>
+</body>
 
   <!-- Шапка -->
  <div class="banner" onclick="openChannel()" style="cursor:pointer;">
