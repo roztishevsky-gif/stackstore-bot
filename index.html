@@ -286,6 +286,34 @@
     .promo-msg.ok { color: #4ade80; }
     .promo-msg.err { color: #f87171; }
     .old-price { font-size: 14px; color: var(--muted); text-decoration: line-through; margin-left: 8px; font-weight: 500; }
+        /* Екран оплати */
+    .pay {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(4,8,19,.94);
+      display: none; align-items: center; justify-content: center;
+      padding: 16px; overflow-y: auto;
+    }
+    .pay.open { display: flex; animation: fade .25s ease; }
+    .pay-box {
+      width: 100%; max-width: 420px;
+      background: linear-gradient(180deg, var(--card2), var(--card));
+      border: 1px solid var(--line);
+      border-radius: 22px; padding: 20px;
+      box-shadow: 0 0 30px rgba(47,123,255,.2);
+    }
+    .pay-box h3 { margin: 0 0 8px; font-size: 20px; }
+    .pay-box p { margin: 0 0 14px; font-size: 14px; line-height: 1.55; color: #b4c4e2; }
+    .pay-amount { font-size: 30px; font-weight: 800; color: var(--blue-light); margin-bottom: 14px; text-shadow: 0 0 16px rgba(47,123,255,.5); }
+    .pay-card {
+      background: var(--bg2); border: 1px solid var(--line);
+      border-radius: 14px; padding: 14px; margin-bottom: 10px;
+    }
+    .pay-card small { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .pay-card b { font-size: 18px; letter-spacing: 1px; word-break: break-all; }
+    .btn-ghost {
+      background: var(--card); border: 1px solid var(--line);
+      box-shadow: none; color: var(--ice);
+    }
   </style>
 </head>
 <body>
@@ -389,7 +417,25 @@
     <div class="sum"><small>Ціна</small><b id="barPrice"></b></div>
     <button class="btn" onclick="orderProduct()">Замовити</button>
   </div>
-
+  <!-- Екран оплати -->
+  <div class="pay" id="pay">
+    <div class="pay-box">
+      <h3>Передплата</h3>
+      <p>Щоб підтвердити замовлення, зробіть передплату на карту нижче. Потім натисніть «Я все зробив» і надішліть менеджеру скріншот квитанції.</p>
+      <div class="pay-amount" id="payAmount"></div>
+      <div class="pay-card">
+        <small>Номер картки</small>
+        <b id="payCard"></b>
+      </div>
+      <div class="pay-card">
+        <small>Отримувач</small>
+        <b id="payHolder"></b>
+      </div>
+      <button class="btn btn-ghost" onclick="copyCard()" id="copyBtn">Скопіювати номер картки</button>
+      <button class="btn" onclick="confirmPaid()">Я все зробив</button>
+      <button class="btn btn-ghost" onclick="closePay()">Назад</button>
+    </div>
+  </div>
   <!-- Товари лежать в окремому файлі products.js -->
   <script src="products.js"></script>
   <script>
@@ -559,7 +605,38 @@
       document.querySelectorAll('#thumbs img').forEach((t, idx) => t.classList.toggle('active', idx === i));
     });
 
+        // ====== РЕКВІЗИТИ ДЛЯ ПЕРЕДПЛАТИ ======
+    const PREPAY = 150;                         // сума передплати, грн
+    const CARD_NUMBER = "4874 0700 3289 8585";  // <-- впиши номер картки
+    const CARD_HOLDER = "Ростислав Р";        // <-- впиши отримувача
+    // ======================================
+
     function orderProduct() {
+      document.getElementById('payAmount').textContent = fmt(PREPAY);
+      document.getElementById('payCard').textContent = CARD_NUMBER;
+      document.getElementById('payHolder').textContent = CARD_HOLDER;
+      document.getElementById('copyBtn').textContent = 'Скопіювати номер картки';
+      document.getElementById('pay').classList.add('open');
+    }
+
+    function closePay() {
+      document.getElementById('pay').classList.remove('open');
+    }
+
+    function copyCard() {
+      const num = CARD_NUMBER.replace(/\s/g, '');
+      const done = () => { document.getElementById('copyBtn').textContent = 'Скопійовано ✓'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(num).then(done).catch(() => {});
+      } else {
+        const t = document.createElement('textarea');
+        t.value = num; document.body.appendChild(t); t.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(t);
+      }
+    }
+
+    function confirmPaid() {
       const p = currentProduct;
       const text =
         `Вітаю! Хочу замовити:\n` +
@@ -568,8 +645,10 @@
         `Колір: ${selColor}\n` +
         `Ціна: ${fmt(currentPrice())}\n` +
         (appliedPromo ? `Промокод: ${appliedPromo.code} (-${appliedPromo.percent}%)\n` : '') +
-        `Оплата: накладений платіж`;
+        `Передплату ${fmt(PREPAY)} сплатив(ла), скріншот квитанції надішлю нижче.\n` +
+        `Оплата решти: накладений платіж`;
       const url = "https://t.me/" + MANAGER_USERNAME + "?text=" + encodeURIComponent(text);
+      closePay();
       if (tg.openTelegramLink) tg.openTelegramLink(url);
       else window.open(url, '_blank');
     }
