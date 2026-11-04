@@ -314,6 +314,20 @@
       background: var(--card); border: 1px solid var(--line);
       box-shadow: none; color: var(--ice);
     }
+        /* Широка кнопка Відгуки */
+    body { padding-bottom: 150px; }
+    .tabbar { flex-wrap: wrap; }
+    .tab-wide { flex: 0 0 100%; flex-direction: row; justify-content: center; gap: 8px; padding: 12px 0; }
+    .tab-wide svg { width: 22px; height: 22px; }
+
+    /* Фото у стилі Pinterest */
+    .masonry { column-count: 2; column-gap: 10px; margin-top: 12px; }
+    .masonry img {
+      width: 100%; display: block;
+      border-radius: 14px; margin-bottom: 10px;
+      break-inside: avoid;
+      border: 1px solid var(--line);
+    }
   </style>
 </head>
 <body>
@@ -365,7 +379,10 @@
       <button class="btn" onclick="openManager()">Написати менеджеру</button>
     </div>
   </div>
-
+  <!-- Відгуки -->
+  <div id="reviews" class="page">
+    <div class="masonry" id="reviewsGrid"></div>
+  </div>
   <!-- Нижня панель -->
   <div class="tabbar">
     <button class="tab active" data-page="catalog">
@@ -375,6 +392,10 @@
     <button class="tab" data-page="info">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>
       Інформація
+    </button>
+    <button class="tab tab-wide" data-page="reviews">
+    <svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
+      Відгуки
     </button>
   </div>
 
@@ -658,6 +679,15 @@
       if (tg.openTelegramLink) tg.openTelegramLink(CHANNEL_URL);
       else window.open(CHANNEL_URL, '_blank');
     }
+        // ====== ВІДГУКИ (тільки фото) ======
+    // Завантаж фото в репозиторій і впиши їхні назви сюди через кому
+    const REVIEW_PHOTOS = [
+      // "otziv-1.jpg",
+      // "otziv-2.jpg",
+    ];
+
+    document.getElementById('reviewsGrid').innerHTML = REVIEW_PHOTOS
+      .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
     function openManager() {
       const url = "https://t.me/" + MANAGER_USERNAME;
       if (tg.openTelegramLink) tg.openTelegramLink(url);
