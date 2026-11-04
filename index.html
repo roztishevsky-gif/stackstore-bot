@@ -268,7 +268,7 @@
 <body>
 
   <!-- Шапка -->
-  <div class="banner">
+ <div class="banner" onclick="openChannel()" style="cursor:pointer;">
     <div class="logo">
       <img src="logo.jpg" alt="" onerror="this.remove(); this.parentNode.textContent='STACK'">
     </div>
@@ -501,7 +501,12 @@
       if (tg.openTelegramLink) tg.openTelegramLink(url);
       else window.open(url, '_blank');
     }
+    const CHANNEL_URL = "https://t.me/+uQ8ppovcE88xYmYy";
 
+    function openChannel() {
+      if (tg.openTelegramLink) tg.openTelegramLink(CHANNEL_URL);
+      else window.open(CHANNEL_URL, '_blank');
+    }
     function openManager() {
       const url = "https://t.me/" + MANAGER_USERNAME;
       if (tg.openTelegramLink) tg.openTelegramLink(url);
