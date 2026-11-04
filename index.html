@@ -328,6 +328,19 @@
       break-inside: avoid;
       border: 1px solid var(--line);
     }
+        /* Калькулятор розміру */
+    .calc { display: flex; gap: 8px; }
+    .calc input {
+      flex: 1; min-width: 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--ice); font-size: 14px; outline: none;
+    }
+    .calc input:focus { border-color: var(--blue); }
+    .calc-msg { font-size: 14px; margin: 10px 4px 0; min-height: 18px; color: var(--blue-light); font-weight: 600; line-height: 1.4; }
+    .calc-msg.err { color: #f87171; }
   </style>
 </head>
 <body>
@@ -421,6 +434,16 @@
 
       <h4>Розмір</h4>
       <div class="options" id="pdpSizes"></div>
+      
+      <div id="calcBlock" style="display:none;">
+        <h4>Підібрати розмір</h4>
+        <div class="calc">
+          <input id="calcHeight" type="number" inputmode="numeric" placeholder="Зріст, см">
+          <input id="calcWeight" type="number" inputmode="numeric" placeholder="Вага, кг">
+        </div>
+        <button class="btn" onclick="calcSize()">Підібрати розмір</button>
+        <div class="calc-msg" id="calcMsg"></div>
+      </div>
 
       <h4>Колір</h4>
       <div class="options" id="pdpColors"></div>
@@ -517,6 +540,10 @@
         msg.textContent = 'Промокод застосовано: знижка ' + PROMO_CODES[code] + '%';
       } else {
         appliedPromo = null;
+      document.getElementById('calcBlock').style.display = p.sizeTable ? 'block' : 'none';
+      document.getElementById('calcHeight').value = '';
+      document.getElementById('calcWeight').value = '';
+      document.getElementById('calcMsg').textContent = '';
         msg.className = 'promo-msg err';
         msg.textContent = 'Такого промокоду не існує';
       }
@@ -692,6 +719,37 @@
 
     document.getElementById('reviewsGrid').innerHTML = REVIEW_PHOTOS
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
+        // ====== КАЛЬКУЛЯТОР РОЗМІРУ ======
+    // Працює лише для товарів, у яких є sizeTable (у products.js)
+    function calcSize() {
+      const h = parseInt(document.getElementById('calcHeight').value, 10);
+      const w = parseInt(document.getElementById('calcWeight').value, 10);
+      const msg = document.getElementById('calcMsg');
+      const table = currentProduct && currentProduct.sizeTable;
+      if (!table) return;
+
+      if (!h || !w || h < 120 || h > 220 || w < 30 || w > 200) {
+        msg.className = 'calc-msg err';
+        msg.textContent = 'Введіть зріст (120–220 см) і вагу (30–200 кг)';
+        return;
+      }
+
+      const byH = table.findIndex(r => h <= r.maxHeight);
+      const byW = table.findIndex(r => w <= r.maxWeight);
+      const idx = Math.max(byH === -1 ? table.length - 1 : byH,
+                           byW === -1 ? table.length - 1 : byW);
+      const rec = table[idx].size;
+
+      if (currentProduct.sizes.includes(rec)) {
+        selSize = rec;
+        renderOptions('pdpSizes', currentProduct.sizes, () => selSize, v => selSize = v);
+        msg.className = 'calc-msg';
+        msg.textContent = 'Вам підходить розмір ' + rec + ' ✓';
+      } else {
+        msg.className = 'calc-msg err';
+        msg.textContent = 'Вам підходить розмір ' + rec + ', але його немає в наявності. Напишіть менеджеру.';
+      }
+    }
     function openManager() {
       const url = "https://t.me/" + MANAGER_USERNAME;
       if (tg.openTelegramLink) tg.openTelegramLink(url);
