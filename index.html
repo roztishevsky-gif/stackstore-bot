@@ -375,6 +375,13 @@
 
       <h4>Колір</h4>
       <div class="options" id="pdpColors"></div>
+      
+      <h4>Промокод</h4>
+      <div class="promo-box">
+        <input id="promoInput" type="text" placeholder="Введіть промокод" autocomplete="off">
+        <button onclick="applyPromo()">Застосувати</button>
+      </div>
+      <div class="promo-msg" id="promoMsg"></div>
     </div>
   </div>
   <div class="pdp-close" onclick="closeProduct()">✕</div>
@@ -409,6 +416,45 @@
     let selColor = null;
 
     const fmt = n => n.toLocaleString('uk-UA').replace(/\u00a0/g, ' ') + " ₴";
+    
+    // Промокоди: "КОД": знижка у відсотках
+    const PROMO_CODES = {
+      "HSKFJAHS": 10,
+      "KFSHWUSN": 10
+    };
+    let appliedPromo = null;
+
+    function currentPrice() {
+      if (!currentProduct) return 0;
+      return appliedPromo
+        ? Math.round(currentProduct.price * (100 - appliedPromo.percent) / 100)
+        : currentProduct.price;
+    }
+
+    function updatePrices() {
+      const p = currentProduct;
+      const price = currentPrice();
+      document.getElementById('barPrice').textContent = fmt(price);
+      document.getElementById('pdpPrice').innerHTML = appliedPromo
+        ? fmt(price) + '<span class="old-price">' + fmt(p.price) + '</span>'
+        : fmt(p.price);
+    }
+
+    function applyPromo() {
+      const code = document.getElementById('promoInput').value.trim().toUpperCase();
+      const msg = document.getElementById('promoMsg');
+      if (!code) { msg.className = 'promo-msg err'; msg.textContent = 'Введіть промокод'; return; }
+      if (PROMO_CODES[code]) {
+        appliedPromo = { code: code, percent: PROMO_CODES[code] };
+        msg.className = 'promo-msg ok';
+        msg.textContent = 'Промокод застосовано: знижка ' + PROMO_CODES[code] + '%';
+      } else {
+        appliedPromo = null;
+        msg.className = 'promo-msg err';
+        msg.textContent = 'Такого промокоду не існує';
+      }
+      updatePrices();
+    }
 
     function renderChips() {
       const box = document.getElementById('chips');
@@ -464,8 +510,10 @@
       selColor = p.colors[0];
 
       document.getElementById('pdpTitle').textContent = p.name;
-      document.getElementById('pdpPrice').textContent = fmt(p.price);
-      document.getElementById('barPrice').textContent = fmt(p.price);
+      appliedPromo = null;
+      document.getElementById('promoInput').value = '';
+      document.getElementById('promoMsg').textContent = '';
+      updatePrices();
       document.getElementById('pdpDesc').textContent = p.description;
 
       const gallery = document.getElementById('gallery');
@@ -518,7 +566,8 @@
         `${p.name}\n` +
         `Розмір: ${selSize}\n` +
         `Колір: ${selColor}\n` +
-        `Ціна: ${fmt(p.price)}\n` +
+        `Ціна: ${fmt(currentPrice())}\n` +
+        (appliedPromo ? `Промокод: ${appliedPromo.code} (-${appliedPromo.percent}%)\n` : '') +
         `Оплата: накладений платіж`;
       const url = "https://t.me/" + MANAGER_USERNAME + "?text=" + encodeURIComponent(text);
       if (tg.openTelegramLink) tg.openTelegramLink(url);
