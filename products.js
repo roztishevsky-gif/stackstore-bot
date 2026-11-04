@@ -1,6 +1,6 @@
 const products = [
   {
-    name: "Чоловічий пуховик з капюшоном",
+    name: "Пуховик бренду Corteiz (з капюшоном)",
     price: 2900,
     category: "Пуховики",
     images: [
