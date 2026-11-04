@@ -10,7 +10,7 @@ const products = [
       "puhovyk-4.jpg",
       "puhovyk-5.jpg"
     ],
-    sizes: ["S ; M"],
+    sizes: ["S", "M", "L"],
     colors: ["Чорний", "Темно-синій"],
     description:
       "Теплий пуховик вільного крою з капюшоном. Зручна блискавка по всій довжині, " +
