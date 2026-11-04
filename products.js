@@ -12,6 +12,11 @@ const products = [
     ],
     sizes: ["S", "M", "L"],
     colors: ["Чорний", "Темно-синій"],
+      sizeTable: [
+      { size: "S", maxHeight: 170, maxWeight: 50 },
+      { size: "M", maxHeight: 175, maxWeight: 65 },
+      { size: "L", maxHeight: 178, maxWeight: 65 }
+    ],
     description:
       "Теплий пуховик вільного крою з капюшоном. Зручна блискавка по всій довжині, " +
       "світловідбивний логотип на грудях і великий принт на спині, еластичні манжети " +
